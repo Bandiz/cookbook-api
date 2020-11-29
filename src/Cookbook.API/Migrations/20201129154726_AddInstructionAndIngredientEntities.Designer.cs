@@ -3,14 +3,16 @@ using System;
 using Cookbook.API.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cookbook.API.Migrations
 {
     [DbContext(typeof(CookbookDbContext))]
-    partial class CookbookDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201129154726_AddInstructionAndIngredientEntities")]
+    partial class AddInstructionAndIngredientEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,16 +24,16 @@ namespace Cookbook.API.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("varchar(767)");
 
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.HasKey("Name", "RecipeId");
+                    b.Property<int?>("RecipeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Name");
 
                     b.HasIndex("RecipeId");
 
@@ -139,11 +141,9 @@ namespace Cookbook.API.Migrations
 
             modelBuilder.Entity("Cookbook.API.Entities.Category", b =>
                 {
-                    b.HasOne("Cookbook.API.Entities.Recipe", "Recipe")
+                    b.HasOne("Cookbook.API.Entities.Recipe", null)
                         .WithMany("Categories")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RecipeId");
                 });
 
             modelBuilder.Entity("Cookbook.API.Entities.Ingredient", b =>

@@ -19,7 +19,27 @@ namespace Cookbook.API.Contexts
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).IsRequired();
+                entity.Property(e => e.ImageUrl).IsRequired();
+                entity.HasMany(e => e.Categories);
+                entity.HasMany(e => e.Instructions);
+                entity.HasMany(e => e.Ingredients);
             });
+
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(e => new { e.Name, e.RecipeId });
+            });
+
+            modelBuilder.Entity<Ingredient>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<Instruction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+
         }
 
     }
