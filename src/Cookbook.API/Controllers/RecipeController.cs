@@ -202,6 +202,9 @@ namespace Cookbook.API.Controllers
                 recipe.TotalTimeMinutes = model.TotalTimeMinutes.Value;
             }
 
+            cookbookContext.Recipe.Update(recipe);
+            cookbookContext.SaveChanges();
+
             return Ok(new GetRecipeResponseModel
             {
                 Id = recipe.Id,
