@@ -18,5 +18,7 @@ namespace Cookbook.API.Entities
 
         public DateTime CreatedAt { get; set; }
 
+        public int RecipeId { get; set; }
+
     }
 }

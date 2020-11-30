@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cookbook.API.Migrations
 {
     [DbContext(typeof(CookbookDbContext))]
-    [Migration("20201129160543_AddCategoryCompositeKey")]
-    partial class AddCategoryCompositeKey
+    [Migration("20201130184104_DbInit")]
+    partial class DbInit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,10 +21,8 @@ namespace Cookbook.API.Migrations
 
             modelBuilder.Entity("Cookbook.API.Entities.Category", b =>
                 {
-                    b.Property<string>("Name")
-                        .HasColumnType("varchar(767)");
-
-                    b.Property<int>("RecipeId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -33,7 +31,13 @@ namespace Cookbook.API.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.HasKey("Name", "RecipeId");
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
@@ -64,7 +68,7 @@ namespace Cookbook.API.Migrations
                     b.Property<int>("Position")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RecipeId")
+                    b.Property<int>("RecipeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -92,7 +96,7 @@ namespace Cookbook.API.Migrations
                     b.Property<int>("Position")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RecipeId")
+                    b.Property<int>("RecipeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -152,14 +156,18 @@ namespace Cookbook.API.Migrations
                 {
                     b.HasOne("Cookbook.API.Entities.Recipe", null)
                         .WithMany("Ingredients")
-                        .HasForeignKey("RecipeId");
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Cookbook.API.Entities.Instruction", b =>
                 {
                     b.HasOne("Cookbook.API.Entities.Recipe", null)
                         .WithMany("Instructions")
-                        .HasForeignKey("RecipeId");
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

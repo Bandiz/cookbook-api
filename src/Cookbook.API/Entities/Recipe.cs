@@ -23,11 +23,11 @@ namespace Cookbook.API.Entities
 
         public DateTime CreatedAt { get; set; }
 
-        public List<Category> Categories { get; set; }
+        public virtual ICollection<Category> Categories { get; set; }
 
-        public List<Instruction> Instructions { get; set; }
+        public virtual ICollection<Instruction> Instructions { get; set; }
 
-        public List<Ingredient> Ingredients { get; set; }
+        public virtual ICollection<Ingredient> Ingredients { get; set; }
 
 
     }

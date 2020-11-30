@@ -27,7 +27,7 @@ namespace Cookbook.API.Contexts
 
             modelBuilder.Entity<Category>(entity =>
             {
-                entity.HasKey(e => new { e.Name, e.RecipeId });
+                entity.HasKey(e => e.Id);
             });
 
             modelBuilder.Entity<Ingredient>(entity =>

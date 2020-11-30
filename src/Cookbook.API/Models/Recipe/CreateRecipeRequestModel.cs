@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Cookbook.API.Models.Recipe
 {
@@ -21,5 +18,8 @@ namespace Cookbook.API.Models.Recipe
 
         public List<string> Categories { get; set; }
 
+        public List<CreateInstructionRequestModel> Instructions { get; set; }
+
+        public List<CreateIngredientRequestModel> Ingredients { get; set; }
     }
 }
