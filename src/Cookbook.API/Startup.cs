@@ -11,6 +11,8 @@ namespace Cookbook.API
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -21,6 +23,17 @@ namespace Cookbook.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                                  builder =>
+                                  {
+                                      var section = Configuration.GetSection("CorsSites").Get<string[]>();
+                                      builder.WithOrigins(section);
+                                  });
+            });
+
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -43,6 +56,8 @@ namespace Cookbook.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
