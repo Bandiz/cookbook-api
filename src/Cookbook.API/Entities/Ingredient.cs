@@ -4,8 +4,6 @@ namespace Cookbook.API.Entities
 {
     public class Ingredient
     {
-        public int Id { get; set; }
-
         public int Amount { get; set; }
 
         public string MeasurementType { get; set; }
@@ -13,12 +11,5 @@ namespace Cookbook.API.Entities
         public string Name  { get; set; }
 
         public int Position { get; set; }
-
-        public string CreatedBy { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public int RecipeId { get; set; }
-
     }
 }

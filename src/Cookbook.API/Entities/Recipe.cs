@@ -1,10 +1,14 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
 
 namespace Cookbook.API.Entities
 {
     public class Recipe
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.Int64)]
         public int Id { get; set; }
 
         public string Title { get; set; }
@@ -23,11 +27,11 @@ namespace Cookbook.API.Entities
 
         public DateTime CreatedAt { get; set; }
 
-        public virtual ICollection<Category> Categories { get; set; }
+        public ICollection<string> Categories { get; set; }
 
-        public virtual ICollection<Instruction> Instructions { get; set; }
+        public ICollection<Instruction> Instructions { get; set; }
 
-        public virtual ICollection<Ingredient> Ingredients { get; set; }
+        public ICollection<Ingredient> Ingredients { get; set; }
 
 
     }

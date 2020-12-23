@@ -1,46 +1,35 @@
-﻿using Cookbook.API.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Cookbook.API.Configuration;
+using Cookbook.API.Entities;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Cookbook.API.Contexts
 {
-    public class CookbookDbContext : DbContext
+    public class CookbookDbContext
     {
-        public CookbookDbContext(DbContextOptions options) : base(options)
+        private readonly CookbookDatabaseSettings _cookbookDbSettings;
+        private MongoClient _mongoClient { get; set; }
+        private IMongoDatabase _cookbookDb { get; set; }
+
+        public IMongoCollection<Counter> Counters { get; set; }
+        public IMongoCollection<Recipe> Recipes { get; set; }
+
+        public CookbookDbContext(IOptions<CookbookDatabaseSettings> settings)
         {
+            _cookbookDbSettings = settings.Value;
+            _mongoClient = new MongoClient(_cookbookDbSettings.ConnectionString);
+            _cookbookDb = _mongoClient.GetDatabase(_cookbookDbSettings.DatabaseName);
+
+            Counters = _cookbookDb.GetCollection<Counter>("counters");
+            Recipes = _cookbookDb.GetCollection<Recipe>(_cookbookDbSettings.RecipesCollectionName);
         }
 
-        public DbSet<Recipe> Recipe { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public int GetNewRecipeId()
         {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Recipe>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).IsRequired();
-                entity.Property(e => e.ImageUrl).IsRequired();
-                entity.HasMany(e => e.Categories);
-                entity.HasMany(e => e.Instructions);
-                entity.HasMany(e => e.Ingredients);
-            });
-
-            modelBuilder.Entity<Category>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<Ingredient>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<Instruction>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
+            var update = Builders<Counter>.Update.Inc(x => x.Sequence, 1);
+            return Counters
+                .FindOneAndUpdate(x => x.Id == _cookbookDbSettings.RecipesCollectionName, update)
+                .Sequence;
         }
-
     }
 }

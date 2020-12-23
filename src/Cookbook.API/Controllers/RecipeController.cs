@@ -1,10 +1,9 @@
-﻿using Cookbook.API.Contexts;
-using Cookbook.API.Entities;
+﻿using Cookbook.API.Entities;
 using Cookbook.API.Models.Recipe;
+using Cookbook.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 
 namespace Cookbook.API.Controllers
 {
@@ -12,21 +11,17 @@ namespace Cookbook.API.Controllers
     [ApiController]
     public class RecipeController : ControllerBase
     {
-        private readonly CookbookDbContext cookbookContext;
+        private readonly IRecipeService recipeService;
 
-        public RecipeController(CookbookDbContext context)
+        public RecipeController(IRecipeService recipeService)
         {
-            this.cookbookContext = context;
+            this.recipeService = recipeService;
         }
 
         [HttpGet("{id:int}")]
         public IActionResult GetRecipe(int id)
         {
-            var recipe = cookbookContext.Recipe
-                .Include(x => x.Categories)
-                .Include(x => x.Ingredients)
-                .Include(x => x.Instructions)
-                .SingleOrDefault(x => x.Id == id);
+            var recipe = recipeService.GetRecipe(id);
 
             if (recipe == null)
             {
@@ -35,10 +30,9 @@ namespace Cookbook.API.Controllers
             return Ok(new GetRecipeResponseModel
             {
                 Id = recipe.Id,
-                Categories = recipe.Categories.Select(x => x.Name).ToList(),
+                Categories = recipe.Categories.ToList(),
                 Ingredients = recipe.Ingredients.Select(x => new IngredientResponseModel
                 {
-                    Id = x.Id,
                     Amount = x.Amount,
                     Name = x.Name,
                     MeasurementType = x.MeasurementType,
@@ -46,7 +40,6 @@ namespace Cookbook.API.Controllers
                 }).ToList(),
                 Instructions = recipe.Instructions.Select(x => new InstructionResponseModel
                 {
-                    Id = x.Id,
                     Description = x.Description,
                     Position = x.Position
                 }).ToList(),
@@ -62,11 +55,11 @@ namespace Cookbook.API.Controllers
         [HttpGet]
         public IActionResult GetRecipes(int count = 10)
         {
-            var recipes = cookbookContext.Recipe.OrderByDescending(x => x.CreatedAt).Take(count);
+            var recipes = recipeService.GetRecipes(count);
             return Ok(recipes.Select(recipe => new GetRecipesResponseModel
             {
                 Id = recipe.Id,
-                Categories = recipe.Categories.Select(x => x.Name).ToList(),
+                Categories = recipe.Categories.ToList(),
                 Title = recipe.Title,
                 ImageUrl = recipe.ImageUrl,
                 TotalTimeMinutes = recipe.TotalTimeMinutes,
@@ -89,40 +82,30 @@ namespace Cookbook.API.Controllers
                 CookTimeMinutes = model.CookTimeMinutes,
                 PrepTimeMinutes = model.PrepTimeMinutes,
                 TotalTimeMinutes = model.TotalTimeMinutes,
-                Categories = model.Categories.Select(x => new Category { 
-                    Name = x, 
-                    CreatedAt = DateTime.UtcNow, 
-                    CreatedBy = "linas.jakseboga@gmail.com" }
-                ).ToList(),
+                Categories = model.Categories.ToList(),
                 Ingredients = model.Ingredients.Select(x => new Ingredient
                 {
                     Amount = x.Amount,
                     MeasurementType = x.MeasurementType,
                     Name = x.Name,
                     Position = x.Position,
-                    CreatedBy = "linas.jakseboga@gmail.com",
-                    CreatedAt = DateTime.UtcNow,
                 }).ToList(),
                 Instructions = model.Instructions.Select(x => new Instruction
                 {
                     Description = x.Description,
                     Position = x.Position,
-                    CreatedBy = "linas.jakseboga@gmail.com",
-                    CreatedAt = DateTime.UtcNow,
                 }).ToList(),
                 CreatedBy = "linas.jakseboga@gmail.com",
                 CreatedAt = DateTime.UtcNow
             };
-            cookbookContext.Recipe.Add(recipe);
-            cookbookContext.SaveChanges();
+            recipeService.CreateRecipe(recipe);
 
             return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id }, new GetRecipeResponseModel
             {
                 Id = recipe.Id,
-                Categories = recipe.Categories.Select(x => x.Name).ToList(),
+                Categories = recipe.Categories.ToList(),
                 Ingredients = recipe.Ingredients.Select(x => new IngredientResponseModel
                 {
-                    Id = x.Id,
                     Amount = x.Amount,
                     Name = x.Name,
                     MeasurementType = x.MeasurementType,
@@ -130,7 +113,6 @@ namespace Cookbook.API.Controllers
                 }).ToList(),
                 Instructions = recipe.Instructions.Select(x => new InstructionResponseModel
                 {
-                    Id = x.Id,
                     Description = x.Description,
                     Position = x.Position
                 }).ToList(),
@@ -146,14 +128,13 @@ namespace Cookbook.API.Controllers
         [HttpDelete("{id:int}")]
         public IActionResult DeleteRecipe(int id)
         {
-            var recipe = cookbookContext.Recipe.SingleOrDefault(x => x.Id == id);
+            var recipe = recipeService.GetRecipe(id);
             if (recipe == null)
             {
                 return NotFound(id);
             }
 
-            cookbookContext.Recipe.Remove(recipe);
-            cookbookContext.SaveChanges();
+            recipeService.DeleteRecipe(id);
 
             return Ok();
         }
@@ -166,7 +147,7 @@ namespace Cookbook.API.Controllers
                 return NotFound(ModelState);
             }
 
-            var recipe = cookbookContext.Recipe.SingleOrDefault(x => x.Id == id);
+            var recipe = recipeService.GetRecipe(id);
             if (recipe == null)
             {
                 return NotFound(id);
@@ -202,8 +183,7 @@ namespace Cookbook.API.Controllers
                 recipe.TotalTimeMinutes = model.TotalTimeMinutes.Value;
             }
 
-            cookbookContext.Recipe.Update(recipe);
-            cookbookContext.SaveChanges();
+            recipeService.UpdateRecipe(recipe);
 
             return Ok(new GetRecipeResponseModel
             {

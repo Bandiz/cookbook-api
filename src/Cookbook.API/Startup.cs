@@ -1,11 +1,13 @@
+using Cookbook.API.Configuration;
 using Cookbook.API.Contexts;
+using Cookbook.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace Cookbook.API
 {
@@ -40,7 +42,14 @@ namespace Cookbook.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Cookbook.API", Version = "v1" });
             });
 
-            services.AddDbContext<CookbookDbContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            services.Configure<CookbookDatabaseSettings>(Configuration.GetSection("CookbookDatabaseSettings"));
+
+            services.AddSingleton<CookbookDbContext>();
+
+            services.AddTransient<IRecipeService, RecipeService>();
+
+            var conventionPack = new ConventionPack { new CamelCaseElementNameConvention() };
+            ConventionRegistry.Register("camelCase", conventionPack, t => true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
