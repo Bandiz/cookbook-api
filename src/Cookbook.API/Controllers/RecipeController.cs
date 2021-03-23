@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace Cookbook.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class RecipeController : ControllerBase
     {
-        private readonly IRecipeService recipeService;
+        private readonly RecipeService recipeService;
 
-        public RecipeController(IRecipeService recipeService)
+        public RecipeController(RecipeService recipeService)
         {
             this.recipeService = recipeService;
         }

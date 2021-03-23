@@ -1,46 +1,61 @@
-﻿using Cookbook.API.Contexts;
+﻿using Cookbook.API.Configuration;
 using Cookbook.API.Entities;
 using MongoDB.Driver;
 using System.Collections.Generic;
 
 namespace Cookbook.API.Services
 {
-    public class RecipeService : IRecipeService
+    public class RecipeService
     {
-        private readonly CookbookDbContext context;
+        private readonly IMongoCollection<Counter> _counters;
+        private readonly IMongoCollection<Recipe> _recipes;
+        private readonly ICookbookDatabaseSettings _settings;
 
-        public RecipeService(CookbookDbContext context)
+        public RecipeService(ICookbookDatabaseSettings settings)
         {
-            this.context = context;
+            _settings = settings;
+            var mongoClient = new MongoClient(settings.ConnectionString);
+            var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
+
+            _counters = cookbookDb.GetCollection<Counter>("counters");
+            _recipes = cookbookDb.GetCollection<Recipe>(settings.RecipesCollectionName);
         }
 
         public Recipe GetRecipe(int id)
         {
-            return context.Recipes.Find(x => x.Id == id).SingleOrDefault();
+            return _recipes.Find(x => x.Id == id).SingleOrDefault();
         }
 
         public List<Recipe> GetRecipes(int count)
         {
-            return context.Recipes.Find(x => true).SortBy(x => x.CreatedBy).Limit(count).ToList();
+            return _recipes.Find(x => true).SortBy(x => x.CreatedBy).Limit(count).ToList();
         }
 
         public Recipe CreateRecipe(Recipe recipe)
         {
-            var newId = context.GetNewRecipeId();
+            var newId = GetNewRecipeId();
             recipe.Id = newId;
-            context.Recipes.InsertOne(recipe);
+            _recipes.InsertOne(recipe);
 
             return recipe;
         }
 
         public void UpdateRecipe(Recipe recipe)
         {
-            context.Recipes.ReplaceOne(x => x.Id == recipe.Id, recipe);
+            _recipes.ReplaceOne(x => x.Id == recipe.Id, recipe);
         }
 
         public void DeleteRecipe(int id)
         {
-            context.Recipes.DeleteOne(x => x.Id == id);
+            _recipes.DeleteOne(x => x.Id == id);
+        }
+
+        private int GetNewRecipeId()
+        {
+            var update = Builders<Counter>.Update.Inc(x => x.Sequence, 1);
+            return _counters
+                .FindOneAndUpdate(x => x.Id == _settings.RecipesCollectionName, update)
+                .Sequence;
         }
     }
 }
