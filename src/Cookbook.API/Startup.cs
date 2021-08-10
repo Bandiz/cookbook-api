@@ -1,13 +1,18 @@
+using AspNetCore.Identity.Mongo;
 using Cookbook.API.Configuration;
+using Cookbook.API.Models;
 using Cookbook.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization.Conventions;
-using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace Cookbook.API
 {
@@ -35,6 +40,41 @@ namespace Cookbook.API
                                   });
             });
 
+            var authenticationSettings = new AuthenticationSettings();
+
+            Configuration.GetSection("Authentication").Bind(authenticationSettings);
+
+            services.AddSingleton(authenticationSettings);
+
+            services.AddIdentityMongoDbProvider<CookbookUser>(identity => { },
+                mongo =>
+                {
+                    var config = new CookbookDatabaseSettings();
+                    Configuration.GetSection(nameof(CookbookDatabaseSettings)).Bind(config);
+                    mongo.ConnectionString = $"{config.ConnectionString}/{config.DatabaseName}";
+                });
+
+            services.Configure<CookbookDatabaseSettings>(Configuration.GetSection(nameof(CookbookDatabaseSettings)));
+            services.AddSingleton<ICookbookDatabaseSettings>(sp => sp.GetRequiredService<IOptions<CookbookDatabaseSettings>>().Value);
+
+            services.AddAuthentication(
+                options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authenticationSettings.Key)),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -42,10 +82,9 @@ namespace Cookbook.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Cookbook.API", Version = "v1" });
             });
 
-            services.Configure<CookbookDatabaseSettings>(Configuration.GetSection(nameof(CookbookDatabaseSettings)));
-            services.AddSingleton<ICookbookDatabaseSettings>(sp => sp.GetRequiredService<IOptions<CookbookDatabaseSettings>>().Value);
 
             services.AddSingleton<RecipeService>();
+
 
             var conventionPack = new ConventionPack { new CamelCaseElementNameConvention() };
             ConventionRegistry.Register("camelCase", conventionPack, t => true);
@@ -67,6 +106,7 @@ namespace Cookbook.API
 
             app.UseCors(MyAllowSpecificOrigins);
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
