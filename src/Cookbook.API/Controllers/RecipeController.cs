@@ -1,12 +1,14 @@
 ﻿using Cookbook.API.Entities;
 using Cookbook.API.Models.Recipe;
 using Cookbook.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 
 namespace Cookbook.API.Controllers
 {
+    [Authorize]
     [Route("api/v1/[controller]")]
     [ApiController]
     public class RecipeController : ControllerBase
@@ -18,6 +20,7 @@ namespace Cookbook.API.Controllers
             this.recipeService = recipeService;
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public IActionResult GetRecipe(int id)
         {
@@ -52,6 +55,7 @@ namespace Cookbook.API.Controllers
             });
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult GetRecipes(int count = 10)
         {
