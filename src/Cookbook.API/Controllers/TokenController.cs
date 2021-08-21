@@ -58,7 +58,9 @@ namespace Cookbook.API.Controllers
                     UserName = googlePayload.Email,
                     Name = googlePayload.GivenName,
                     LastName = googlePayload.FamilyName,
-                    FullName = googlePayload.Name
+                    FullName = googlePayload.Name,
+                    GoogleId = googlePayload.Subject,
+                    Roles = new List<string> { "User" }
                 };
 
                 var result = await userManager.CreateAsync(user);
@@ -75,16 +77,12 @@ namespace Cookbook.API.Controllers
                 new Claim(ClaimTypes.Name, user.UserName),
             };
 
-            if (user.Roles.Count > 0)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, string.Join(',', user.Roles)));
-            }
-
+            claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var header = new JwtHeader(creds);
-            var payload = new JwtPayload("yourdomain.com", "yourdomain.com", claims, DateTime.Now, DateTime.Now.AddMinutes(30), DateTime.Now);
+            var payload = new JwtPayload("cookbook-dev", "cookbook-dev", claims, DateTime.Now, DateTime.Now.AddMinutes(30), DateTime.Now);
 
             var token = new JwtSecurityToken(header, payload);
 

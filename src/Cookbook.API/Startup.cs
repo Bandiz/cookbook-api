@@ -1,6 +1,7 @@
 using AspNetCore.Identity.Mongo;
 using Cookbook.API.Configuration;
 using Cookbook.API.Models;
+using Cookbook.API.Models.User;
 using Cookbook.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -71,8 +72,8 @@ namespace Cookbook.API
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authenticationSettings.Key)),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
+                        ValidateIssuer = true,
+                        ValidateAudience = true
                     };
                 });
 

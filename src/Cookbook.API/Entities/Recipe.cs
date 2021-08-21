@@ -27,6 +27,10 @@ namespace Cookbook.API.Entities
 
         public DateTime CreatedAt { get; set; }
 
+        public string UpdatedBy { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<string> Categories { get; set; }
 
         public ICollection<Instruction> Instructions { get; set; }

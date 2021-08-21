@@ -70,6 +70,7 @@ namespace Cookbook.API.Controllers
             }));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult CreateRecipe(CreateRecipeRequestModel model)
         {
@@ -99,7 +100,7 @@ namespace Cookbook.API.Controllers
                     Description = x.Description,
                     Position = x.Position,
                 }).ToList(),
-                CreatedBy = "linas.jakseboga@gmail.com",
+                CreatedBy = User.Identity.Name,
                 CreatedAt = DateTime.UtcNow
             };
             recipeService.CreateRecipe(recipe);
@@ -129,6 +130,7 @@ namespace Cookbook.API.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteRecipe(int id)
         {
@@ -143,6 +145,7 @@ namespace Cookbook.API.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public IActionResult UpdateRecipe(int id, UpdateRecipeRequestModel model)
         {
@@ -157,37 +160,51 @@ namespace Cookbook.API.Controllers
                 return NotFound(id);
             }
 
+            var updated = false;
+
             if (!string.IsNullOrEmpty(model.Title))
             {
+                updated = true;
                 recipe.Title = model.Title;
             }
 
             if (!string.IsNullOrEmpty(model.Description))
             {
+                updated = true;
                 recipe.Description = model.Description;
             }
 
             if (!string.IsNullOrEmpty(model.ImageUrl))
             {
+                updated = true;
                 recipe.ImageUrl = model.ImageUrl;
             }
 
             if (model.PrepTimeMinutes.HasValue)
             {
+                updated = true;
                 recipe.PrepTimeMinutes = model.PrepTimeMinutes.Value;
             }
 
             if (model.CookTimeMinutes.HasValue)
             {
+                updated = true;
                 recipe.CookTimeMinutes = model.CookTimeMinutes.Value;
             }
 
             if (model.TotalTimeMinutes.HasValue)
             {
+                updated = true;
                 recipe.TotalTimeMinutes = model.TotalTimeMinutes.Value;
             }
 
-            recipeService.UpdateRecipe(recipe);
+            if (updated)
+            {
+                recipe.UpdatedBy = User.Identity.Name;
+                recipe.UpdatedAt = DateTime.UtcNow;
+                recipeService.UpdateRecipe(recipe);
+            }
+
 
             return Ok(new GetRecipeResponseModel
             {

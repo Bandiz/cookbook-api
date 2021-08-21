@@ -11,5 +11,16 @@ namespace Cookbook.API.Models
         public string LastName { get; set; }
 
         public string FullName { get; set; }
+
+        public string GoogleId { get; set; }
+
+        [BsonIgnore]
+        public bool IsAdmin
+        {
+            get
+            {
+                return Roles.Contains("Admin");
+            }
+        }
     }
 }

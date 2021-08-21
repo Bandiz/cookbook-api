@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Cookbook.API.Models.Recipe
 {
     public class CreateRecipeRequestModel
     {
+        [Required]
+        [MinLength(2)]
         public string Title { get; set; }
 
         public string Description { get; set; }
