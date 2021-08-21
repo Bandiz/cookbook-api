@@ -72,8 +72,8 @@ namespace Cookbook.API
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authenticationSettings.Key)),
-                        ValidateIssuer = true,
-                        ValidateAudience = true
+                        ValidateIssuer = false,
+                        ValidateAudience = false
                     };
                 });
 

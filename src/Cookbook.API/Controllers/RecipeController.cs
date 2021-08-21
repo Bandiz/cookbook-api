@@ -88,8 +88,9 @@ namespace Cookbook.API.Controllers
                 PrepTimeMinutes = model.PrepTimeMinutes,
                 TotalTimeMinutes = model.TotalTimeMinutes,
                 Categories = model.Categories.ToList(),
-                Ingredients = model.Ingredients.Select(x => new Ingredient
+                Ingredients = model.Ingredients.Select((x, index) => new Ingredient
                 {
+                    Id = index + 1,
                     Amount = x.Amount,
                     MeasurementType = x.MeasurementType,
                     Name = x.Name,
@@ -205,7 +206,6 @@ namespace Cookbook.API.Controllers
                 recipeService.UpdateRecipe(recipe);
             }
 
-
             return Ok(new GetRecipeResponseModel
             {
                 Id = recipe.Id,
@@ -216,6 +216,54 @@ namespace Cookbook.API.Controllers
                 PrepTimeMinutes = recipe.PrepTimeMinutes,
                 TotalTimeMinutes = recipe.TotalTimeMinutes,
             });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id:int}/ingredient")]
+        public IActionResult CreateIngredient(int id, CreateIngredientRequestModel model)
+        {
+            if (model == null)
+            {
+                return NotFound(ModelState);
+            }
+
+            var recipe = recipeService.GetRecipe(id);
+            if (recipe == null)
+            {
+                return NotFound(id);
+            }
+
+            var elementAt = recipe.Ingredients.ElementAtOrDefault(model.Position);
+
+            var newIngredient = new Ingredient()
+            {
+                Id = recipe.Ingredients.Count + 1,
+                Name = model.Name,
+                Amount = model.Amount,
+                MeasurementType = model.MeasurementType,
+                Position = elementAt == null ? recipe.Ingredients.Count : model.Position
+            };
+
+            if (elementAt == null)
+            {
+                recipe.Ingredients.Add(newIngredient);
+            } 
+            else
+            {
+                foreach (var ingredient in recipe.Ingredients.Where(x => x.Position >= model.Position))
+                {
+                    ingredient.Position++;
+                }
+                recipe.Ingredients.Add(newIngredient);
+                
+            }
+
+            recipe.UpdatedBy = User.Identity.Name;
+            recipe.UpdatedAt = DateTime.UtcNow;
+
+            recipeService.UpdateRecipe(recipe);
+
+            return Ok(recipe.Ingredients.OrderBy(x => x.Position).Select(x => new IngredientResponseModel(x)));
         }
 
     }
