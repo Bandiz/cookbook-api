@@ -219,18 +219,18 @@ namespace Cookbook.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("{id:int}/ingredient")]
-        public IActionResult CreateIngredient(int id, CreateIngredientRequestModel model)
+        [HttpPost("{recipeId:int}/ingredient")]
+        public IActionResult CreateIngredient(int recipeId, CreateIngredientRequestModel model)
         {
             if (model == null)
             {
                 return NotFound(ModelState);
             }
 
-            var recipe = recipeService.GetRecipe(id);
+            var recipe = recipeService.GetRecipe(recipeId);
             if (recipe == null)
             {
-                return NotFound(id);
+                return NotFound(recipeId);
             }
 
             var elementAt = recipe.Ingredients.ElementAtOrDefault(model.Position);
@@ -247,7 +247,7 @@ namespace Cookbook.API.Controllers
             if (elementAt == null)
             {
                 recipe.Ingredients.Add(newIngredient);
-            } 
+            }
             else
             {
                 foreach (var ingredient in recipe.Ingredients.Where(x => x.Position >= model.Position))
@@ -255,7 +255,41 @@ namespace Cookbook.API.Controllers
                     ingredient.Position++;
                 }
                 recipe.Ingredients.Add(newIngredient);
-                
+
+            }
+
+            recipe.UpdatedBy = User.Identity.Name;
+            recipe.UpdatedAt = DateTime.UtcNow;
+
+            recipeService.UpdateRecipe(recipe);
+
+            return Ok(recipe.Ingredients.OrderBy(x => x.Position).Select(x => new IngredientResponseModel(x)));
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{recipeId:int}/ingredient/{ingredientId:int}")]
+        public IActionResult DeleteIngredient(int recipeId, int ingredientId)
+        {
+            var recipe = recipeService.GetRecipe(recipeId);
+            if (recipe == null)
+            {
+                return NotFound(recipeId);
+            }
+
+            var element = recipe.Ingredients.SingleOrDefault(x => x.Id == ingredientId);
+
+
+            if (element == null)
+            {
+                return NotFound(ingredientId);
+            }
+
+            recipe.Ingredients.Remove(element);
+
+            foreach (var (ingredient, index) in recipe.Ingredients.OrderBy(x => x.Position).Select((x, i) => (x, i)))
+            {
+                  ingredient.Position = index;
             }
 
             recipe.UpdatedBy = User.Identity.Name;
