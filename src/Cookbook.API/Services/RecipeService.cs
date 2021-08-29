@@ -2,6 +2,7 @@
 using Cookbook.API.Entities;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cookbook.API.Services
 {
@@ -9,6 +10,7 @@ namespace Cookbook.API.Services
     {
         private readonly IMongoCollection<Counter> _counters;
         private readonly IMongoCollection<Recipe> _recipes;
+        private readonly IMongoCollection<Category> _categories;
         private readonly ICookbookDatabaseSettings _settings;
 
         public RecipeService(ICookbookDatabaseSettings settings)
@@ -19,6 +21,7 @@ namespace Cookbook.API.Services
 
             _counters = cookbookDb.GetCollection<Counter>("counters");
             _recipes = cookbookDb.GetCollection<Recipe>(settings.RecipesCollectionName);
+            _categories = cookbookDb.GetCollection<Category>("categories");
         }
 
         public Recipe GetRecipe(int id)
@@ -35,7 +38,10 @@ namespace Cookbook.API.Services
         {
             var newId = GetNewRecipeId();
             recipe.Id = newId;
+
             _recipes.InsertOne(recipe);
+
+            UpdateCategories(recipe);
 
             return recipe;
         }
@@ -43,6 +49,8 @@ namespace Cookbook.API.Services
         public void UpdateRecipe(Recipe recipe)
         {
             _recipes.ReplaceOne(x => x.Id == recipe.Id, recipe);
+
+            UpdateCategories(recipe);
         }
 
         public void DeleteRecipe(int id)
@@ -56,6 +64,21 @@ namespace Cookbook.API.Services
             return _counters
                 .FindOneAndUpdate(x => x.Id == _settings.RecipesCollectionName, update)
                 .Sequence;
+        }
+
+        private void UpdateCategories(Recipe recipe)
+        {
+            if (recipe.Categories.Count > 0)
+            {
+                var categories = _categories.Find(x => recipe.Categories.Contains(x.CategoryName)).ToList().Select(x => x.CategoryName);
+                var notAddedCategories = recipe.Categories.Where(x => !categories.Contains(x)).ToList();
+
+                if (notAddedCategories.Count == 0)
+                {
+                    return;
+                }
+                _categories.InsertMany(notAddedCategories.Select(x => new Category() { CategoryName = x }));
+            }
         }
     }
 }

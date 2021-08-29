@@ -4,6 +4,7 @@ using Cookbook.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Cookbook.API.Controllers
@@ -106,29 +107,7 @@ namespace Cookbook.API.Controllers
             };
             recipeService.CreateRecipe(recipe);
 
-            return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id }, new GetRecipeResponseModel
-            {
-                Id = recipe.Id,
-                Categories = recipe.Categories.ToList(),
-                Ingredients = recipe.Ingredients.Select(x => new IngredientResponseModel
-                {
-                    Amount = x.Amount,
-                    Name = x.Name,
-                    MeasurementType = x.MeasurementType,
-                    Position = x.Position
-                }).ToList(),
-                Instructions = recipe.Instructions.Select(x => new InstructionResponseModel
-                {
-                    Description = x.Description,
-                    Position = x.Position
-                }).ToList(),
-                Title = recipe.Title,
-                Description = recipe.Description,
-                ImageUrl = recipe.ImageUrl,
-                CookTimeMinutes = recipe.CookTimeMinutes,
-                PrepTimeMinutes = recipe.PrepTimeMinutes,
-                TotalTimeMinutes = recipe.TotalTimeMinutes,
-            });
+            return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id }, CreateRecipeResponse(recipe));
         }
 
         [Authorize(Roles = "Admin")]
@@ -206,15 +185,67 @@ namespace Cookbook.API.Controllers
                 recipeService.UpdateRecipe(recipe);
             }
 
-            return Ok(new GetRecipeResponseModel
+
+            return Ok(CreateRecipeResponse(recipe));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id:int}/category/{category}")]
+        public IActionResult AddToCategory(int id, string category)
+        {
+            var recipe = recipeService.GetRecipe(id);
+            if (recipe == null)
             {
-                Id = recipe.Id,
-                Title = recipe.Title,
-                Description = recipe.Description,
-                ImageUrl = recipe.ImageUrl,
-                CookTimeMinutes = recipe.CookTimeMinutes,
-                PrepTimeMinutes = recipe.PrepTimeMinutes,
-                TotalTimeMinutes = recipe.TotalTimeMinutes,
+                return NotFound(id);
+            }
+
+            var updated = false;
+
+            if (!recipe.Categories.Contains(category))
+            {
+                updated = true;
+                recipe.Categories.Add(category);
+            }
+
+            if (updated)
+            {
+                recipe.UpdatedBy = User.Identity.Name;
+                recipe.UpdatedAt = DateTime.UtcNow;
+                recipeService.UpdateRecipe(recipe);
+            }
+
+            return Ok(new UpdateCategoriesResponse()
+            {
+                Categories = new List<string>(recipe.Categories)
+            });
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}/category/{category}")]
+        public IActionResult RemoveFromCategory(int id, string category)
+        {
+            var recipe = recipeService.GetRecipe(id);
+            if (recipe == null)
+            {
+                return NotFound(id);
+            }
+
+
+            if (!recipe.Categories.Contains(category))
+            {
+                return NotFound(category);
+            }
+
+            recipe.Categories.Remove(category);
+            
+            recipe.UpdatedBy = User.Identity.Name;
+            recipe.UpdatedAt = DateTime.UtcNow;
+            recipeService.UpdateRecipe(recipe);
+
+            return Ok(new UpdateCategoriesResponse()
+            {
+                Categories = new List<string>(recipe.Categories)
             });
         }
 
@@ -298,6 +329,34 @@ namespace Cookbook.API.Controllers
             recipeService.UpdateRecipe(recipe);
 
             return Ok(recipe.Ingredients.OrderBy(x => x.Position).Select(x => new IngredientResponseModel(x)));
+        }
+
+
+        private GetRecipeResponseModel CreateRecipeResponse(Recipe recipe)
+        {
+            return new GetRecipeResponseModel
+            {
+                Id = recipe.Id,
+                Categories = recipe.Categories.ToList(),
+                Ingredients = recipe.Ingredients.Select(x => new IngredientResponseModel
+                {
+                    Amount = x.Amount,
+                    Name = x.Name,
+                    MeasurementType = x.MeasurementType,
+                    Position = x.Position
+                }).ToList(),
+                Instructions = recipe.Instructions.Select(x => new InstructionResponseModel
+                {
+                    Description = x.Description,
+                    Position = x.Position
+                }).ToList(),
+                Title = recipe.Title,
+                Description = recipe.Description,
+                ImageUrl = recipe.ImageUrl,
+                CookTimeMinutes = recipe.CookTimeMinutes,
+                PrepTimeMinutes = recipe.PrepTimeMinutes,
+                TotalTimeMinutes = recipe.TotalTimeMinutes,
+            };
         }
 
     }
