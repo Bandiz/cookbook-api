@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace Cookbook.API.Entities
 {
@@ -7,7 +8,10 @@ namespace Cookbook.API.Entities
     {
         [BsonId]
         [BsonRepresentation(BsonType.String)]
-        [BsonElement("Name")]
         public string CategoryName { get; set; }
+
+        public string CreatedBy { get; set; }
+
+        public DateTime CteatedAt { get; set; }
     }
 }

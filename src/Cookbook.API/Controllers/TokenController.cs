@@ -88,7 +88,14 @@ namespace Cookbook.API.Controllers
 
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token)
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                user = new 
+                { 
+                    email = user.Email,
+                    lastName = user.LastName,
+                    name = user.Name,
+                    isAdmin = user.IsAdmin
+                }
             });
         }
     }

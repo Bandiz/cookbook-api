@@ -1,21 +1,17 @@
 ﻿using Cookbook.API.Configuration;
 using Cookbook.API.Entities;
 using MongoDB.Driver;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Cookbook.API.Services
 {
     public class CategoriesService
     {
         private readonly IMongoCollection<Category> _categories;
-        private readonly ICookbookDatabaseSettings _settings;
 
         public CategoriesService(ICookbookDatabaseSettings settings)
         {
-            _settings = settings;
             var mongoClient = new MongoClient(settings.ConnectionString);
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
             _categories = cookbookDb.GetCollection<Category>("categories");
@@ -30,5 +26,25 @@ namespace Cookbook.API.Services
         {
             return _categories.Find(x => true).ToList();
         }
+
+        public Category CreateCategory(Category category)
+        {
+            _categories.InsertOne(category);
+
+            return category;
+        }
+
+        public void DeleteCategory(string categoryName)
+        {
+            _categories.DeleteOne(x => x.CategoryName == categoryName);
+        }
+
+        public List<Category> CreateCategories(List<Category> categories)
+        {
+            _categories.InsertMany(categories);
+
+            return categories;
+        }
+
     }
 }
