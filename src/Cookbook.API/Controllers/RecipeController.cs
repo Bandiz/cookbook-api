@@ -320,7 +320,7 @@ namespace Cookbook.API.Controllers
 
             foreach (var (ingredient, index) in recipe.Ingredients.OrderBy(x => x.Position).Select((x, i) => (x, i)))
             {
-                  ingredient.Position = index;
+                ingredient.Position = index;
             }
 
             recipe.UpdatedBy = User.Identity.Name;
@@ -331,6 +331,82 @@ namespace Cookbook.API.Controllers
             return Ok(recipe.Ingredients.OrderBy(x => x.Position).Select(x => new IngredientResponseModel(x)));
         }
 
+
+
+        //[Authorize(Roles = "Admin")]
+        //[HttpPut("{recipeId:int}/ingredient/{ingredientId:int}")]
+        //public IActionResult UpdateIngredient(int recipeId, int ingredientId, UpdateIngredientRequestModel model)
+        //{
+        //    if (model == null)
+        //    {
+        //        return NotFound(ModelState);
+        //    }
+
+        //    var recipe = recipeService.GetRecipe(recipeId);
+        //    if (recipe == null)
+        //    {
+        //        return NotFound(recipeId);
+        //    }
+
+        //    var existingIngredient = recipe.Ingredients.SingleOrDefault(x => x.Id == ingredientId); 
+
+        //    if (existingIngredient == null)
+        //    {
+        //        return NotFound(ingredientId);
+        //    }
+
+        //    var updated = false;
+
+        //    if (!string.IsNullOrEmpty(model.Name))
+        //    {
+        //        updated = true;
+        //        existingIngredient.Name = model.Name;
+        //    }
+
+        //    if (!string.IsNullOrEmpty(model.MeasurementType))
+        //    {
+        //        updated = true;
+        //        existingIngredient.MeasurementType = model.MeasurementType;
+        //    }
+
+        //    if (model.Amount.HasValue)
+        //    {
+        //        updated = true;
+        //        existingIngredient.Amount = model.Amount.Value;
+        //    }
+
+        //    if (model.Position.HasValue)
+        //    {
+        //        recipe.Ingredients.Remove(existingIngredient);
+        //        existingIngredient.Position = model.Position.Value;
+
+        //        foreach (var ingredient in recipe.Ingredients.Where(x => x.Position >= model.Position.Value))
+        //        {
+        //            ingredient.Position++;
+        //        }
+        //        recipe.Ingredients.Add(existingIngredient);
+
+        //        var elementAt = recipe.Ingredients.ElementAtOrDefault(model.Position.Value);
+        //    }
+
+
+        //        foreach (var ingredient in recipe.Ingredients.Where(x => x.Position >= model.Position))
+        //        {
+        //            ingredient.Position++;
+        //        }
+        //        recipe.Ingredients.Add(newIngredient);
+
+        //    if (updated)
+        //    {
+        //        recipe.UpdatedBy = User.Identity.Name;
+        //        recipe.UpdatedAt = DateTime.UtcNow;
+        //        recipeService.UpdateRecipe(recipe);
+        //    }
+
+
+
+        //    return Ok(recipe.Ingredients.OrderBy(x => x.Position).Select(x => new IngredientResponseModel(x)));
+        //}
 
         private GetRecipeResponseModel CreateRecipeResponse(Recipe recipe)
         {
