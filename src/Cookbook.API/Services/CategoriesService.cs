@@ -14,7 +14,7 @@ namespace Cookbook.API.Services
         {
             var mongoClient = new MongoClient(settings.ConnectionString);
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
-            _categories = cookbookDb.GetCollection<Category>("categories");
+            _categories = cookbookDb.GetCollection<Category>(settings.CategoriesCollectionName);
         }
 
         public Category GetCategory(string categoryName)

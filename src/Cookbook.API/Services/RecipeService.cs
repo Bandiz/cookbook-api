@@ -21,7 +21,7 @@ namespace Cookbook.API.Services
             var mongoClient = new MongoClient(settings.ConnectionString);
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
 
-            _counters = cookbookDb.GetCollection<Counter>("counters");
+            _counters = cookbookDb.GetCollection<Counter>(settings.CountersCollectionName);
             _recipes = cookbookDb.GetCollection<Recipe>(settings.RecipesCollectionName);
         }
 
