@@ -58,9 +58,9 @@ namespace Cookbook.API.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult GetRecipes(int count = 10)
+        public IActionResult GetRecipes(string searchText, int count = 10)
         {
-            var recipes = recipeService.GetRecipes(count);
+            var recipes = recipeService.GetRecipes(searchText, count);
             return Ok(recipes.Select(recipe => new GetRecipesResponseModel
             {
                 Id = recipe.Id,

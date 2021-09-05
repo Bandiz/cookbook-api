@@ -27,9 +27,19 @@ namespace Cookbook.API.Services
             return _recipes.Find(x => x.Id == id).SingleOrDefault();
         }
 
-        public List<Recipe> GetRecipes(int count)
+        public List<Recipe> GetRecipes(string text, int count)
         {
-            return _recipes.Find(x => true).SortBy(x => x.CreatedBy).Limit(count).ToList();
+            FilterDefinition<Recipe> filter = Builders<Recipe>.Filter.Empty;
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                filter = Builders<Recipe>.Filter.And(filter, Builders<Recipe>.Filter.Text(text, new TextSearchOptions()
+                {
+                    CaseSensitive = false
+                }));
+            }
+
+            return _recipes.Find(filter).SortBy(x => x.CreatedBy).Limit(count).ToList();
         }
 
         public Recipe CreateRecipe(Recipe recipe)
