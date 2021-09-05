@@ -10,11 +10,10 @@ namespace Cookbook.API.Services
     {
         private readonly IMongoCollection<Category> _categories;
 
-        public CategoriesService(ICookbookDatabaseSettings settings)
+        public CategoriesService(CookbookDatabaseSettings settings, IMongoClient mongoClient)
         {
-            var mongoClient = new MongoClient(settings.ConnectionString);
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
-            _categories = cookbookDb.GetCollection<Category>(settings.CategoriesCollectionName);
+            _categories = cookbookDb.GetCollection<Category>($"{nameof(Category).ToLower()}s");
         }
 
         public Category GetCategory(string categoryName)

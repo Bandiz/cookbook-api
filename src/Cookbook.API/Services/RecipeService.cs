@@ -11,18 +11,15 @@ namespace Cookbook.API.Services
     {
         private readonly IMongoCollection<Counter> _counters;
         private readonly IMongoCollection<Recipe> _recipes;
-        private readonly ICookbookDatabaseSettings _settings;
         private readonly CategoriesService categoryService;
 
-        public RecipeService(ICookbookDatabaseSettings settings, CategoriesService categoryService)
+        public RecipeService(CookbookDatabaseSettings settings, IMongoClient mongoClient, CategoriesService categoryService)
         {
-            _settings = settings;
             this.categoryService = categoryService;
-            var mongoClient = new MongoClient(settings.ConnectionString);
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
 
-            _counters = cookbookDb.GetCollection<Counter>(settings.CountersCollectionName);
-            _recipes = cookbookDb.GetCollection<Recipe>(settings.RecipesCollectionName);
+            _counters = cookbookDb.GetCollection<Counter>($"{nameof(Counter).ToLower()}s");
+            _recipes = cookbookDb.GetCollection<Recipe>($"{nameof(Recipe).ToLower()}s");
         }
 
         public Recipe GetRecipe(int id)
@@ -63,7 +60,7 @@ namespace Cookbook.API.Services
         {
             var update = Builders<Counter>.Update.Inc(x => x.Sequence, 1);
             return _counters
-                .FindOneAndUpdate(x => x.Id == _settings.RecipesCollectionName, update)
+                .FindOneAndUpdate(x => x.Id == nameof(Recipe).ToLower(), update)
                 .Sequence;
         }
 

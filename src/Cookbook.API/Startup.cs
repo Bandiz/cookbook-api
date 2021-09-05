@@ -1,7 +1,6 @@
 using AspNetCore.Identity.Mongo;
 using Cookbook.API.Configuration;
 using Cookbook.API.Models;
-using Cookbook.API.Models.User;
 using Cookbook.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using System.Text;
 
 namespace Cookbook.API
@@ -42,21 +42,21 @@ namespace Cookbook.API
             });
 
             var authenticationSettings = new AuthenticationSettings();
-
             Configuration.GetSection("Authentication").Bind(authenticationSettings);
-
             services.AddSingleton(authenticationSettings);
+
+            var config = new CookbookDatabaseSettings();
+            Configuration.GetSection(nameof(CookbookDatabaseSettings)).Bind(config);
+            services.AddSingleton(config);
+
+            services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(config.ConnectionString));
 
             services.AddIdentityMongoDbProvider<CookbookUser>(identity => { },
                 mongo =>
                 {
-                    var config = new CookbookDatabaseSettings();
-                    Configuration.GetSection(nameof(CookbookDatabaseSettings)).Bind(config);
                     mongo.ConnectionString = $"{config.ConnectionString}/{config.DatabaseName}";
                 });
 
-            services.Configure<CookbookDatabaseSettings>(Configuration.GetSection(nameof(CookbookDatabaseSettings)));
-            services.AddSingleton<ICookbookDatabaseSettings>(sp => sp.GetRequiredService<IOptions<CookbookDatabaseSettings>>().Value);
 
             services.AddAuthentication(
                 options =>
