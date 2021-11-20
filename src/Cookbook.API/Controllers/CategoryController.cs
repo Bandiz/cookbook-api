@@ -28,7 +28,8 @@ namespace Cookbook.API.Controllers
             return Ok(categories);
         }
 
-        [AllowAnonymous]
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("{categoryName}")]
         public IActionResult GetCategory(string categoryName)
         {
@@ -45,6 +46,15 @@ namespace Cookbook.API.Controllers
                 CreatedBy = category.CreatedBy, 
                 CreatedAt = category.CteatedAt 
             });
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("list")]
+        public IActionResult GetCategoriesList()
+        {
+            var categories = categoriesService.GetCategories(false).Select(MapCategoryResponse);
+            return Ok(categories);
         }
 
         [Authorize(Roles = "Admin")]
@@ -65,6 +75,7 @@ namespace Cookbook.API.Controllers
             var category = new Category()
             {
                 CategoryName = model.CategoryName,
+                Visible = model.Visible,
                 CreatedBy = User.Identity.Name,
                 CteatedAt = DateTime.UtcNow
             };
@@ -72,15 +83,10 @@ namespace Cookbook.API.Controllers
 
             categoriesService.CreateCategory(category);
 
-            return CreatedAtAction(
+            return base.CreatedAtAction(
                 nameof(GetCategory),
                 new { CategoryName = category.CategoryName },
-                new CreateCategoryResponse()
-                {
-                    CategoryName = category.CategoryName,
-                    CreatedBy = category.CreatedBy,
-                    CreatedAt = category.CteatedAt
-                }
+                MapCategoryResponse(category)
             );
         }
 
@@ -103,6 +109,71 @@ namespace Cookbook.API.Controllers
             categoriesService.DeleteCategory(categoryName);
 
             return Ok();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{categoryName}/visible")]
+        public IActionResult Visible(string categoryName)
+        {
+            if (string.IsNullOrEmpty(categoryName))
+            {
+                return BadRequest("Category name required");
+            }
+            var existingCategory = categoriesService.GetCategory(categoryName);
+
+            if (existingCategory == null)
+            {
+                return NotFound(categoryName);
+            }
+
+            if (!existingCategory.Visible)
+            {
+                existingCategory.Visible = true;
+                existingCategory.UpdatedAt = DateTime.UtcNow;
+                existingCategory.UpdatedBy = User.Identity.Name;
+                categoriesService.UpdateCategory(existingCategory);
+            }
+
+            return Ok(MapCategoryResponse(existingCategory));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{categoryName}/invisible")]
+        public IActionResult Invisible(string categoryName)
+        {
+            if (string.IsNullOrEmpty(categoryName))
+            {
+                return BadRequest("Category name required");
+            }
+            var existingCategory = categoriesService.GetCategory(categoryName);
+
+            if (existingCategory == null)
+            {
+                return NotFound(categoryName);
+            }
+
+            if (existingCategory.Visible)
+            {
+                existingCategory.Visible = false;
+                existingCategory.UpdatedAt = DateTime.UtcNow;
+                existingCategory.UpdatedBy = User.Identity.Name;
+                categoriesService.UpdateCategory(existingCategory);
+            }
+
+            return Ok(MapCategoryResponse(existingCategory));
+        }
+
+        private static CreateCategoryResponse MapCategoryResponse(Category category)
+        {
+            return new CreateCategoryResponse()
+            {
+                CategoryName = category.CategoryName,
+                Visible = category.Visible,
+                CreatedBy = category.CreatedBy,
+                CreatedAt = category.CteatedAt,
+                UpdatedBy = category.UpdatedBy,
+                UpdatedAt = category.UpdatedAt
+            };
         }
     }
 }

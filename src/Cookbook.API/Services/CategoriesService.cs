@@ -13,7 +13,7 @@ namespace Cookbook.API.Services
         public CategoriesService(CookbookDatabaseSettings settings, IMongoClient mongoClient)
         {
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
-            _categories = cookbookDb.GetCollection<Category>($"{nameof(Category).ToLower()}s");
+            _categories = cookbookDb.GetCollection<Category>("categories");
         }
 
         public Category GetCategory(string categoryName)
@@ -21,9 +21,10 @@ namespace Cookbook.API.Services
             return _categories.Find(x => x.CategoryName == categoryName).SingleOrDefault();
         }
 
-        public List<Category> GetCategories()
+        public List<Category> GetCategories(bool visible = true)
         {
-            return _categories.Find(x => true).ToList();
+            var filter = Builders<Category>.Filter;
+            return _categories.Find(visible ? filter.Where(x => x.Visible) : filter.Empty).ToList();
         }
 
         public Category CreateCategory(Category category)
@@ -43,6 +44,11 @@ namespace Cookbook.API.Services
             _categories.InsertMany(categories);
 
             return categories;
+        }
+
+        public void UpdateCategory(Category category)
+        {
+            _categories.ReplaceOne(x => x.CategoryName == category.CategoryName, category);
         }
 
     }
