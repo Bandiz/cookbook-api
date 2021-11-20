@@ -37,7 +37,8 @@ namespace Cookbook.API
                                   builder =>
                                   {
                                       var section = Configuration.GetSection("CorsSites").Get<string[]>();
-                                      builder.WithOrigins(section);
+                                      
+                                      builder.WithOrigins(section).AllowAnyHeader();
                                   });
             });
 
