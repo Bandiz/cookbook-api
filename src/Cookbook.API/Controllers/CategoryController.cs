@@ -112,8 +112,8 @@ namespace Cookbook.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("{categoryName}/visible")]
-        public IActionResult Visible(string categoryName)
+        [HttpPut("{categoryName}/visible/{visible:bool}")]
+        public IActionResult Visible(string categoryName, bool visible)
         {
             if (string.IsNullOrEmpty(categoryName))
             {
@@ -126,35 +126,9 @@ namespace Cookbook.API.Controllers
                 return NotFound(categoryName);
             }
 
-            if (!existingCategory.Visible)
+            if (existingCategory.Visible != visible)
             {
-                existingCategory.Visible = true;
-                existingCategory.UpdatedAt = DateTime.UtcNow;
-                existingCategory.UpdatedBy = User.Identity.Name;
-                categoriesService.UpdateCategory(existingCategory);
-            }
-
-            return Ok(MapCategoryResponse(existingCategory));
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpPut("{categoryName}/invisible")]
-        public IActionResult Invisible(string categoryName)
-        {
-            if (string.IsNullOrEmpty(categoryName))
-            {
-                return BadRequest("Category name required");
-            }
-            var existingCategory = categoriesService.GetCategory(categoryName);
-
-            if (existingCategory == null)
-            {
-                return NotFound(categoryName);
-            }
-
-            if (existingCategory.Visible)
-            {
-                existingCategory.Visible = false;
+                existingCategory.Visible = visible;
                 existingCategory.UpdatedAt = DateTime.UtcNow;
                 existingCategory.UpdatedBy = User.Identity.Name;
                 categoriesService.UpdateCategory(existingCategory);
