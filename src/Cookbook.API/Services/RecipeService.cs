@@ -27,16 +27,23 @@ namespace Cookbook.API.Services
             return _recipes.Find(x => x.Id == id).SingleOrDefault();
         }
 
-        public List<Recipe> GetRecipes(string text, int count)
+        public List<Recipe> GetRecipes(string text, int count, List<string> categories)
         {
-            FilterDefinition<Recipe> filter = Builders<Recipe>.Filter.Empty;
+            var filter = Builders<Recipe>.Filter.Empty;
 
             if (!string.IsNullOrEmpty(text))
             {
-                filter = Builders<Recipe>.Filter.And(filter, Builders<Recipe>.Filter.Text(text, new TextSearchOptions()
+                var textFilter = Builders<Recipe>.Filter.Text(text, new TextSearchOptions()
                 {
                     CaseSensitive = false
-                }));
+                });
+                filter = Builders<Recipe>.Filter.And(filter, textFilter);
+            }
+
+            if (categories != null && categories.Count > 0)
+            {
+                var categoryFilter = Builders<Recipe>.Filter.AnyIn(recipe => recipe.Categories, categories);
+                filter = Builders<Recipe>.Filter.And(filter, categoryFilter);
             }
 
             return _recipes.Find(filter).SortBy(x => x.CreatedBy).Limit(count).ToList();
@@ -86,10 +93,10 @@ namespace Cookbook.API.Services
                     return;
                 }
 
-                categoryService.CreateCategories(notAddedCategories.Select(x => new Category() 
-                { 
-                    CategoryName = x, 
-                    CreatedBy = recipe.UpdatedBy == null ? recipe.CreatedBy : recipe.UpdatedBy, 
+                categoryService.CreateCategories(notAddedCategories.Select(x => new Category()
+                {
+                    CategoryName = x,
+                    CreatedBy = recipe.UpdatedBy == null ? recipe.CreatedBy : recipe.UpdatedBy,
                     CteatedAt = DateTime.UtcNow
                 }).ToList());
             }
