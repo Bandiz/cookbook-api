@@ -1,6 +1,6 @@
 ﻿using Cookbook.API.Entities;
 using Cookbook.API.Models.Category;
-using Cookbook.API.Services;
+using Cookbook.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -13,11 +13,13 @@ namespace Cookbook.API.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly CategoriesService categoriesService;
+        private readonly ICategoriesService categoriesService;
+        private readonly IRecipeService recipeService;
 
-        public CategoryController(CategoriesService categoriesService)
+        public CategoryController(ICategoriesService categoriesService, IRecipeService recipeService)
         {
             this.categoriesService = categoriesService;
+            this.recipeService = recipeService;
         }
 
         [AllowAnonymous]
@@ -105,7 +107,7 @@ namespace Cookbook.API.Controllers
             {
                 return NotFound(categoryName);
             }
-
+            recipeService.RemoveCategoryAll(categoryName);
             categoriesService.DeleteCategory(categoryName);
 
             return Ok();

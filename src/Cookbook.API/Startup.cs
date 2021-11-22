@@ -2,6 +2,7 @@ using AspNetCore.Identity.Mongo;
 using Cookbook.API.Configuration;
 using Cookbook.API.Models;
 using Cookbook.API.Services;
+using Cookbook.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,7 +38,7 @@ namespace Cookbook.API
                                   builder =>
                                   {
                                       var section = Configuration.GetSection("CorsSites").Get<string[]>();
-                                      
+
                                       builder
                                         .WithOrigins(section)
                                         .AllowAnyHeader()
@@ -88,8 +89,8 @@ namespace Cookbook.API
             });
 
 
-            services.AddSingleton<RecipeService>();
-            services.AddSingleton<CategoriesService>();
+            services.AddSingleton<IRecipeService, RecipeService>();
+            services.AddSingleton<ICategoriesService, CategoriesService>();
 
 
             var conventionPack = new ConventionPack { new CamelCaseElementNameConvention() };

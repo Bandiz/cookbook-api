@@ -1,12 +1,13 @@
 ﻿using Cookbook.API.Configuration;
 using Cookbook.API.Entities;
+using Cookbook.API.Services.Interfaces;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Cookbook.API.Services
 {
-    public class CategoriesService
+    public class CategoriesService: ICategoriesService
     {
         private readonly IMongoCollection<Category> _categories;
 

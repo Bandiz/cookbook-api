@@ -37,6 +37,5 @@ namespace Cookbook.API.Entities
 
         public ICollection<Ingredient> Ingredients { get; set; }
 
-
     }
 }

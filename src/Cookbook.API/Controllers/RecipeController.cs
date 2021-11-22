@@ -1,6 +1,6 @@
 ﻿using Cookbook.API.Entities;
 using Cookbook.API.Models.Recipe;
-using Cookbook.API.Services;
+using Cookbook.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,9 +14,9 @@ namespace Cookbook.API.Controllers
     [ApiController]
     public class RecipeController : ControllerBase
     {
-        private readonly RecipeService recipeService;
+        private readonly IRecipeService recipeService;
 
-        public RecipeController(RecipeService recipeService)
+        public RecipeController(IRecipeService recipeService)
         {
             this.recipeService = recipeService;
         }

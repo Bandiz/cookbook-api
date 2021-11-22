@@ -1,5 +1,6 @@
 ﻿using Cookbook.API.Configuration;
 using Cookbook.API.Entities;
+using Cookbook.API.Services.Interfaces;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -7,13 +8,13 @@ using System.Linq;
 
 namespace Cookbook.API.Services
 {
-    public class RecipeService
+    public class RecipeService: IRecipeService
     {
         private readonly IMongoCollection<Counter> _counters;
         private readonly IMongoCollection<Recipe> _recipes;
-        private readonly CategoriesService categoryService;
+        private readonly ICategoriesService categoryService;
 
-        public RecipeService(CookbookDatabaseSettings settings, IMongoClient mongoClient, CategoriesService categoryService)
+        public RecipeService(CookbookDatabaseSettings settings, IMongoClient mongoClient, ICategoriesService categoryService)
         {
             this.categoryService = categoryService;
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
@@ -71,6 +72,18 @@ namespace Cookbook.API.Services
         public void DeleteRecipe(int id)
         {
             _recipes.DeleteOne(x => x.Id == id);
+        }
+
+        public void RemoveCategoryAll(string categoryName)
+        {
+            var recipes = _recipes.Find(x => x.Categories.Contains(categoryName)).ToList();
+
+            foreach(var recipe in recipes)
+            {
+                recipe.Categories.Remove(categoryName);
+                _recipes.ReplaceOneAsync(x => x.Id == recipe.Id, recipe);
+            }
+
         }
 
         private int GetNewRecipeId()
