@@ -245,7 +245,9 @@ namespace Cookbook.API.Controllers
 
             return Ok(new UpdateCategoriesResponse()
             {
-                Categories = new List<string>(recipe.Categories)
+                Categories = new List<string>(recipe.Categories),
+                UpdatedBy = recipe.UpdatedBy,
+                UpdatedAt = recipe.UpdatedAt.Value,
             });
         }
 
