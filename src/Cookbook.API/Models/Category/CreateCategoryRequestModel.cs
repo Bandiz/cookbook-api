@@ -1,6 +1,6 @@
 ﻿namespace Cookbook.API.Models.Category
 {
-    public class CreateCategoryRequest
+    public class CreateCategoryRequestModel
     {
         public string CategoryName { get; set; }
 

@@ -47,7 +47,14 @@ namespace Cookbook.API.Services
                 filter = Builders<Recipe>.Filter.And(filter, categoryFilter);
             }
 
-            return _recipes.Find(filter).SortBy(x => x.CreatedBy).Limit(count).ToList();
+            var query = _recipes.Find(filter).SortBy(x => x.CreatedBy);
+
+            if (count > 0)
+            {
+                return query.Limit(count).ToList();
+            }
+
+            return query.ToList();
         }
 
         public Recipe CreateRecipe(Recipe recipe)

@@ -2,7 +2,7 @@
 
 namespace Cookbook.API.Models.Category
 {
-    public class GetCategoryResponse
+    public class CategoryResponseModel
     {
         public string CategoryName { get; set; }
 

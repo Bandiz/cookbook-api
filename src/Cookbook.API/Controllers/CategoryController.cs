@@ -4,6 +4,7 @@ using Cookbook.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Cookbook.API.Controllers
@@ -42,12 +43,7 @@ namespace Cookbook.API.Controllers
                 return NotFound(categoryName);
             }
 
-            return Ok(new GetCategoryResponse() 
-            { 
-                CategoryName = category.CategoryName, 
-                CreatedBy = category.CreatedBy, 
-                CreatedAt = category.CteatedAt 
-            });
+            return Ok(MapCategoryResponse(category));
         }
 
 
@@ -60,8 +56,33 @@ namespace Cookbook.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("{categoryName}/details")]
+        public IActionResult GetCategoryDetails(string categoryName)
+        {
+            var category = categoriesService.GetCategory(categoryName);
+
+            if (category == null)
+            {
+                return NotFound(categoryName);
+            }
+            var recipes = recipeService.GetRecipes(null, 0, new List<string>() { categoryName });
+            return Ok(new CategoryDetailsResponseModel()
+            {
+                Recipes = recipes.Select(x => new CategoryRecipeResponseModel()
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    CreatedBy = x.CreatedBy,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedBy = x.UpdatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                }).ToList()
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult CreateCategory(CreateCategoryRequest model)
+        public IActionResult CreateCategory(CreateCategoryRequestModel model)
         {
             if (model == null)
             {
@@ -139,9 +160,9 @@ namespace Cookbook.API.Controllers
             return Ok(MapCategoryResponse(existingCategory));
         }
 
-        private static CreateCategoryResponse MapCategoryResponse(Category category)
+        private static CategoryResponseModel MapCategoryResponse(Category category)
         {
-            return new CreateCategoryResponse()
+            return new CategoryResponseModel()
             {
                 CategoryName = category.CategoryName,
                 Visible = category.Visible,
