@@ -50,9 +50,7 @@ namespace Cookbook.API.Controllers
 
             if (user == null)
             {
-
-                user = await userManager.CreateUserAsync(googlePayload
-                    );
+                user = await userManager.CreateUserAsync(googlePayload);
 
                 if (user == null)
                 {
