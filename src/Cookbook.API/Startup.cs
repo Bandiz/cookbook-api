@@ -89,7 +89,7 @@ namespace Cookbook.API
 
 
             services.AddSingleton<IRecipeService, RecipeService>();
-            services.AddSingleton<ICategoriesService, CategoriesService>();
+            services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<ITokenService, TokenService>();
 
 

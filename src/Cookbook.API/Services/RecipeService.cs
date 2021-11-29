@@ -12,9 +12,9 @@ namespace Cookbook.API.Services
     {
         private readonly IMongoCollection<Counter> _counters;
         private readonly IMongoCollection<Recipe> _recipes;
-        private readonly ICategoriesService categoryService;
+        private readonly ICategoryService categoryService;
 
-        public RecipeService(CookbookDatabaseSettings settings, IMongoClient mongoClient, ICategoriesService categoryService)
+        public RecipeService(CookbookDatabaseSettings settings, IMongoClient mongoClient, ICategoryService categoryService)
         {
             this.categoryService = categoryService;
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);

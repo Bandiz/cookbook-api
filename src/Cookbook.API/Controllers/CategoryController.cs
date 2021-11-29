@@ -14,12 +14,12 @@ namespace Cookbook.API.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoriesService categoriesService;
+        private readonly ICategoryService categoryService;
         private readonly IRecipeService recipeService;
 
-        public CategoryController(ICategoriesService categoriesService, IRecipeService recipeService)
+        public CategoryController(ICategoryService categoryService, IRecipeService recipeService)
         {
-            this.categoriesService = categoriesService;
+            this.categoryService = categoryService;
             this.recipeService = recipeService;
         }
 
@@ -27,7 +27,7 @@ namespace Cookbook.API.Controllers
         [HttpGet]
         public IActionResult GetCategories()
         {
-            var categories = categoriesService.GetCategories().Select(x => x.CategoryName);
+            var categories = categoryService.GetCategories().Select(x => x.CategoryName);
             return Ok(categories);
         }
 
@@ -36,7 +36,7 @@ namespace Cookbook.API.Controllers
         [HttpGet("{categoryName}")]
         public IActionResult GetCategory(string categoryName)
         {
-            var category = categoriesService.GetCategory(categoryName);
+            var category = categoryService.GetCategory(categoryName);
 
             if (category == null)
             {
@@ -51,7 +51,7 @@ namespace Cookbook.API.Controllers
         [HttpGet("list")]
         public IActionResult GetCategoriesList()
         {
-            var categories = categoriesService.GetCategories(false).Select(MapCategoryResponse);
+            var categories = categoryService.GetCategories(false).Select(MapCategoryResponse);
             return Ok(categories);
         }
 
@@ -59,7 +59,7 @@ namespace Cookbook.API.Controllers
         [HttpGet("{categoryName}/details")]
         public IActionResult GetCategoryDetails(string categoryName)
         {
-            var category = categoriesService.GetCategory(categoryName);
+            var category = categoryService.GetCategory(categoryName);
 
             if (category == null)
             {
@@ -88,7 +88,7 @@ namespace Cookbook.API.Controllers
             {
                 return NotFound(ModelState);
             }
-            var existingCategory = categoriesService.GetCategory(model.CategoryName);
+            var existingCategory = categoryService.GetCategory(model.CategoryName);
 
             if (existingCategory != null)
             {
@@ -104,7 +104,7 @@ namespace Cookbook.API.Controllers
             };
 
 
-            categoriesService.CreateCategory(category);
+            categoryService.CreateCategory(category);
 
             return base.CreatedAtAction(
                 nameof(GetCategory),
@@ -122,14 +122,14 @@ namespace Cookbook.API.Controllers
             {
                 return BadRequest("Category name required");
             }
-            var existingCategory = categoriesService.GetCategory(categoryName);
+            var existingCategory = categoryService.GetCategory(categoryName);
 
             if (existingCategory == null)
             {
                 return NotFound(categoryName);
             }
             recipeService.RemoveCategoryAll(categoryName);
-            categoriesService.DeleteCategory(categoryName);
+            categoryService.DeleteCategory(categoryName);
 
             return Ok();
         }
@@ -142,7 +142,7 @@ namespace Cookbook.API.Controllers
             {
                 return BadRequest("Category name required");
             }
-            var existingCategory = categoriesService.GetCategory(categoryName);
+            var existingCategory = categoryService.GetCategory(categoryName);
 
             if (existingCategory == null)
             {
@@ -154,7 +154,7 @@ namespace Cookbook.API.Controllers
                 existingCategory.Visible = visible;
                 existingCategory.UpdatedAt = DateTime.UtcNow;
                 existingCategory.UpdatedBy = User.Identity.Name;
-                categoriesService.UpdateCategory(existingCategory);
+                categoryService.UpdateCategory(existingCategory);
             }
 
             return Ok(MapCategoryResponse(existingCategory));

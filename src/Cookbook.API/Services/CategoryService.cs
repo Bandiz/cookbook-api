@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace Cookbook.API.Services
 {
-    public class CategoriesService: ICategoriesService
+    public class CategoryService: ICategoryService
     {
         private readonly IMongoCollection<Category> _categories;
 
-        public CategoriesService(CookbookDatabaseSettings settings, IMongoClient mongoClient)
+        public CategoryService(CookbookDatabaseSettings settings, IMongoClient mongoClient)
         {
             var cookbookDb = mongoClient.GetDatabase(settings.DatabaseName);
             _categories = cookbookDb.GetCollection<Category>("categories");

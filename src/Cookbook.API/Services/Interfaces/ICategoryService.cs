@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Cookbook.API.Services.Interfaces
 {
-    public interface ICategoriesService
+    public interface ICategoryService
     {
         Category GetCategory(string categoryName);
 
