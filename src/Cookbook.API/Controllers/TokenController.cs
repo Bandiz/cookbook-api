@@ -1,16 +1,13 @@
-﻿using Cookbook.API.Models;
+﻿using Cookbook.API.Configuration;
+using Cookbook.API.Extensions;
+using Cookbook.API.Models;
+using Cookbook.API.Services;
+using Cookbook.API.Services.Interfaces;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
-using Cookbook.API.Configuration;
 
 namespace Cookbook.API.Controllers
 {
@@ -18,13 +15,15 @@ namespace Cookbook.API.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        private readonly UserManager<CookbookUser> userManager;
         private readonly AuthenticationSettings authenticationSettings;
+        private readonly ITokenService tokenService;
+        private readonly UserManager<CookbookUser> userManager;
 
-        public TokenController(UserManager<CookbookUser> userManager, AuthenticationSettings authenticationSettings)
+        public TokenController(AuthenticationSettings authenticationSettings, ITokenService tokenService, UserManager<CookbookUser> userManager)
         {
-            this.userManager = userManager;
             this.authenticationSettings = authenticationSettings;
+            this.tokenService = tokenService;
+            this.userManager = userManager;
         }
 
         [HttpGet]
@@ -51,46 +50,44 @@ namespace Cookbook.API.Controllers
 
             if (user == null)
             {
-                user = new CookbookUser
-                {
-                    Email = googlePayload.Email,
-                    EmailConfirmed = googlePayload.EmailVerified,
-                    UserName = googlePayload.Email,
-                    Name = googlePayload.GivenName,
-                    LastName = googlePayload.FamilyName,
-                    FullName = googlePayload.Name,
-                    GoogleId = googlePayload.Subject,
-                    Roles = new List<string> { "User" }
-                };
 
-                var result = await userManager.CreateAsync(user);
+                user = await userManager.CreateUserAsync(googlePayload
+                    );
 
-                if (!result.Succeeded)
+                if (user == null)
                 {
                     return BadRequest("User could not be created");
                 }
             }
 
-
-            var claims = new List<Claim>
+            return Ok(new
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-            };
+                token = tokenService.GetUserToken(user),
+                user = new
+                {
+                    email = user.Email,
+                    lastName = user.LastName,
+                    name = user.Name,
+                    isAdmin = user.IsAdmin
+                }
+            });
+        }
 
-            claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        [HttpGet("login")]
+        public async Task<IActionResult> GetToken([FromForm] string userName, [FromForm] string password)
+        {
+            var user = await userManager.FindByNameAsync(userName);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.Key));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var header = new JwtHeader(creds);
-            var payload = new JwtPayload("cookbook-dev", "cookbook-dev", claims, DateTime.Now, DateTime.Now.AddMinutes(30), DateTime.Now);
-
-            var token = new JwtSecurityToken(header, payload);
+            if (user == null || !await userManager.CheckPasswordAsync(user, password))
+            {
+                return BadRequest("Username or password wrong");
+            }
 
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                user = new 
-                { 
+                token = tokenService.GetUserToken(user),
+                user = new
+                {
                     email = user.Email,
                     lastName = user.LastName,
                     name = user.Name,
@@ -100,3 +97,5 @@ namespace Cookbook.API.Controllers
         }
     }
 }
+
+
