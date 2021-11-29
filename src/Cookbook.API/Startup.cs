@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization.Conventions;
@@ -91,6 +90,7 @@ namespace Cookbook.API
 
             services.AddSingleton<IRecipeService, RecipeService>();
             services.AddSingleton<ICategoriesService, CategoriesService>();
+            services.AddSingleton<ITokenService, TokenService>();
 
 
             var conventionPack = new ConventionPack { new CamelCaseElementNameConvention() };
