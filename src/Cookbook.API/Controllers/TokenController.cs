@@ -71,7 +71,7 @@ namespace Cookbook.API.Controllers
             });
         }
 
-        [HttpGet("login")]
+        [HttpPost("login")]
         public async Task<IActionResult> GetToken([FromForm] string userName, [FromForm] string password)
         {
             var user = await userManager.FindByNameAsync(userName);
