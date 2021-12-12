@@ -70,14 +70,16 @@ namespace Cookbook.API
                 })
                 .AddJwtBearer(options =>
                 {
+                    options.Audience = "cookbook-dev";
                     options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
+                    options.SaveToken = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
+                        ValidIssuer = "cookbook-dev",
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authenticationSettings.Key)),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
+                        ValidateIssuer = true,
+                        ValidateAudience = true
                     };
                 });
 
