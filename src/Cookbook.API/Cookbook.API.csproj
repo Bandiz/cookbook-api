@@ -35,4 +35,12 @@
     <Content Remove="C:\Users\linas\.nuget\packages\mongodb.driver.core\2.11.5\build\../runtimes/win/native/libzstd.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\linas\source\repos\cookbook-api\src\Cookbook.API\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\linas\source\repos\cookbook-api\src\Cookbook.API\.editorconfig" />
+  </ItemGroup>
+
 </Project>
