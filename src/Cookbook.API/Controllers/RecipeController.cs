@@ -73,7 +73,7 @@ namespace Cookbook.API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult CreateRecipe(CreateRecipeRequestModel model)
+        public IActionResult CreateRecipe([FromForm] CreateRecipeRequestModel model)
         {
             if (model == null)
             {
