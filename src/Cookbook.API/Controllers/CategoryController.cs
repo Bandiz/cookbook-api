@@ -10,7 +10,7 @@ using System.Linq;
 namespace Cookbook.API.Controllers
 {
     [Authorize]
-    [Route("api/v1/[controller]")]
+    [Route("api/category")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
