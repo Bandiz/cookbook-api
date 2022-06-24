@@ -10,7 +10,7 @@ using System.Linq;
 namespace Cookbook.API.Controllers
 {
     [Authorize]
-    [Route("api/v1/[controller]")]
+    [Route("api/recipe")]
     [ApiController]
     public class RecipeController : ControllerBase
     {
@@ -126,7 +126,7 @@ namespace Cookbook.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("{id:int}")]
+        [HttpPatch("{id:int}")]
         public IActionResult UpdateRecipe(int id, UpdateRecipeRequestModel model)
         {
             if (model == null)
